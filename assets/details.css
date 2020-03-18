@@ -1,0 +1,35 @@
+.details {
+    padding-bottom: 1ch;
+    border-bottom: 1px solid #ccc;
+}
+
+.details__trigger {
+    all: inherit;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+    padding: .5em 0;
+    border: 0;
+    cursor: pointer;
+}
+.details__trigger::marker {
+    display: none;
+}
+.details__trigger::-webkit-details-marker {
+    display: none;
+}
+.details .indicator {
+    height: 1rem;
+    margin: 0 0 0 .5em;
+    fill: currentColor;
+}
+
+.details[data-expanded="false"] .details__content {
+    display: none;
+}
+.details[open] .indicator__vert,
+.details[data-expanded="true"] .indicator__vert {
+    display: none;
+}

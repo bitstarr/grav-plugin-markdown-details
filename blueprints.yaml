@@ -1,0 +1,72 @@
+name: Markdown Details
+version: 1.0.0
+description: 'Adds the ability to render collapsible sections in Markdown'
+icon: caret-square-o-down
+author:
+  name: Sebastian Laube
+  email: bitstarr@users.noreply.github.com
+homepage: https://github.com/bitstarr/grav-plugin-markdown-details
+keywords: markdown, details, summary, collapsible, a11y, accessability
+license: MIT
+dependencies:
+    - { name: grav, version: '>=1.6.0' }
+
+form:
+  validation: strict
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 0
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    built_in_css:
+      type: toggle
+      label: Use built in CSS
+      highlight: 1
+      default: 1
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    a11y:
+      type: toggle
+      label: Use a more accessable markup instead of details/summary
+      highlight: 1
+      default: 1
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    base_class:
+      type: text
+      label: CSS classes for the containing element
+      validate:
+        required: true
+
+    title_class:
+      type: text
+      label: CSS classes for the title element (summary text)
+      validate:
+        required: true
+
+    trigger_class:
+      type: text
+      label: CSS classes for the trigger element (button)
+      validate:
+        required: true
+
+    content_class:
+      type: text
+      label: CSS classes for the content container
+      validate:
+        required: true
