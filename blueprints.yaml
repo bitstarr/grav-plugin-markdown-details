@@ -1,5 +1,5 @@
 name: Markdown Details
-version: 1.0.0
+version: 1.0.1
 description: 'Adds the ability to render collapsible sections in Markdown'
 icon: caret-square-o-down
 author:

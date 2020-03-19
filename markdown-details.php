@@ -12,6 +12,7 @@ class MarkdownDetailsPlugin extends Plugin
     protected $trigger_class;
     protected $content_class;
     protected $icon;
+    protected $a11y;
 
     /**
      * @return array
