@@ -114,7 +114,8 @@ class MarkdownDetailsPlugin extends Plugin
             $this->grav['assets']
                 ->add('plugin://markdown-details/assets/details.css');
         }
-        if ( $this->a11y )
+
+        if ($this->config->get('plugins.markdown-details.a11y');)
         {
             $this->grav['assets']->add('plugin://markdown-details/js/details.js', ['group' => 'bottom']);
         }
