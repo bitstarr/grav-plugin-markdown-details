@@ -102,3 +102,7 @@ Note that if you use the Admin Plugin, a file with your configuration named mark
 As it's hard to find a good documentation about the inner workings of markdown processing in Grav, the plugin is simple but may not be using approved coding patterns. So feel free to improve the code quality.
 
 The plugin is based on [Markdown Collapsible](https://github.com/X-Ryl669/grav-plugin-markdown-collapsible) which is based on [Markdown Notices](https://daverupert.com/2019/12/why-details-is-not-an-accordion/)
+
+## Contributing
+
+Please set your pull request to the `develop` branch so the version number can be iterated before final merging into main branch.
