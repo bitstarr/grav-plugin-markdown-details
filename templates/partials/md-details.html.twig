@@ -1,0 +1,24 @@
+{% if config.a11y %}
+<div class="{{ config.base_class }} js-details" data-expanded="true">
+    <{{ titleTag }} class="{{ config.title_class }}">
+        <button class="{{ config.trigger_class }}" aria-expanded="true">
+            {{ titleText }}
+        </button>
+    </{{ titleTag }}>
+
+    <div class="{{ config.content_class }}">
+        {{ content|markdown|raw}}
+    </div>
+</div>
+{% else %}
+<details class="{{ config.base_class }}">
+    <summary class="{{ config.trigger_class }}">
+        <{{ titleTag }} class="{{ config.title_class }}">
+        {{ titleText }}
+        </{{ titleTag }}>
+    </summary>
+    <div class="{{ config.content_class }}">
+        {{ content|markdown|raw}}
+    </div>
+</details>
+{% endif %}
