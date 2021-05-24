@@ -64,7 +64,6 @@ class MarkdownDetailsPlugin extends Plugin
         $this->enable([
             // Put your main events here
             'onTwigTemplatePaths'   => ['onTwigTemplatePaths', 0],
-            'onAssetsInitialized'   => ['onAssetsInitialized', 0],
             'onPageContentRaw'      => ['onPageContentRaw', 0],
         ]);
     }
@@ -87,11 +86,11 @@ class MarkdownDetailsPlugin extends Plugin
         $raw = $page->getRawContent();
         if ( $raw && preg_match_all( '/!>[\S\s]*?!@/', $raw, $instances ) )
         {
+            $this->loadAssets();
+
             foreach ( $instances[0] as $instance )
             {
-                $options = [
-                    'config' => $config,
-                ];
+                $options = [];
 
                 // sort out the title line
                 preg_match( '/^!>(\s?\[(\w*)\]?)?\s*(.*)/', $instance, $titeMatch );
@@ -117,7 +116,7 @@ class MarkdownDetailsPlugin extends Plugin
     /**
      * Add our assets
      */
-    public function onAssetsInitialized()
+    public function loadAssets()
     {
         /** @var Config $config */
         $config = $this->config->get( 'plugins.'.$this->name );

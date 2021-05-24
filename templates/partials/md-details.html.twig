@@ -1,23 +1,23 @@
-{% if config.a11y %}
-<div class="{{ config.base_class }} js-details" data-expanded="true">
-    <{{ titleTag }} class="{{ config.title_class }}">
-        <button class="{{ config.trigger_class }}" aria-expanded="true">
+{% if config.plugins['markdown-details'].a11y %}
+<div class="{{ config.plugins['markdown-details'].base_class }} js-details" data-expanded="true">
+    <{{ titleTag }} class="{{ config.plugins['markdown-details'].title_class }}">
+        <button class="{{ config.plugins['markdown-details'].trigger_class }}" aria-expanded="true">
             {{ titleText }}
         </button>
     </{{ titleTag }}>
 
-    <div class="{{ config.content_class }}">
+    <div class="{{ config.plugins['markdown-details'].content_class }}">
         {{ content|markdown|raw}}
     </div>
 </div>
 {% else %}
-<details class="{{ config.base_class }}">
-    <summary class="{{ config.trigger_class }}">
-        <{{ titleTag }} class="{{ config.title_class }}">
+<details class="{{ config.plugins['markdown-details'].base_class }}">
+    <summary class="{{ config.plugins['markdown-details'].trigger_class }}">
+        <{{ titleTag }} class="{{ config.plugins['markdown-details'].title_class }}">
         {{ titleText }}
         </{{ titleTag }}>
     </summary>
-    <div class="{{ config.content_class }}">
+    <div class="{{ config.plugins['markdown-details'].content_class }}">
         {{ content|markdown|raw}}
     </div>
 </details>
