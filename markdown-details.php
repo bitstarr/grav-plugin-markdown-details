@@ -1,12 +1,17 @@
 <?php
 namespace Grav\Plugin;
 
-use \Grav\Common\Grav;
-use \Grav\Common\Plugin;
+use Composer\Autoload\ClassLoader;
+use Grav\Common\Plugin;
 use RocketTheme\Toolbox\Event\Event;
 
+/**
+ * Class MarkdownDetailsPlugin
+ * @package Grav\Plugin
+ */
 class MarkdownDetailsPlugin extends Plugin
 {
+
     protected $base_class;
     protected $title_class;
     protected $trigger_class;
@@ -16,109 +21,123 @@ class MarkdownDetailsPlugin extends Plugin
 
     /**
      * @return array
+     *
+     * The getSubscribedEvents() gives the core a list of events
+     *     that the plugin wants to listen to. The key of each
+     *     array section is the event that the plugin listens to
+     *     and the value (in the form of an array) contains the
+     *     callable (or function) as well as the priority. The
+     *     higher the number the higher the priority.
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
-            'onMarkdownInitialized' => ['onMarkdownInitialized', 0],
-            'onTwigSiteVariables'   => ['onTwigSiteVariables', 0]
+            'onPluginsInitialized' => [
+                ['autoload', 100000], // TODO: Remove when plugin requires Grav >=1.7
+                ['onPluginsInitialized', 0]
+            ],
         ];
     }
 
-    public function onMarkdownInitialized(Event $event)
+    /**
+    * Composer autoload.
+    *
+    * @return ClassLoader
+    */
+    public function autoload(): ClassLoader
     {
-        $this->a11y = $this->config->get('plugins.markdown-details.a11y');
-        $this->base_class  = $this->config->get('plugins.markdown-details.base_class');
-        $this->title_class = $this->config->get('plugins.markdown-details.title_class');
-        $this->trigger_class = $this->config->get('plugins.markdown-details.trigger_class');
-        $this->content_class = $this->config->get('plugins.markdown-details.content_class');
-        $this->icon = '<svg class="indicator" aria-hidden="true" focusable="false" viewBox="0 0 10 10"><rect class="indicator__vert" height="8" width="2" y="1" x="4"/><rect height="2" width="8" y="4" x="1"/></svg>';
-
-        $markdown = $event['markdown'];
-
-        $markdown->addBlockType('!', 'Details', true, false);
-
-        $markdown->blockDetails = function($Line)
-        {
-            if (preg_match('/^!>\s?(\[(\w*)\]?)?\s*(.*)$/', $Line['text'], $matches))
-            {
-                $tag = ( $matches[2] ) ? $matches[2] : 'h2';
-                $title = $matches[3];
-
-                if ( $this->a11y )
-                {
-                    $Block = array(
-                        'name' => 'opener',
-                        'markup' => '<div class="' . $this->base_class . ' js-details" data-expanded="true"><' . $tag . ' class="' . $this->title_class . '"><button class="' . $this->trigger_class . '" aria-expanded="true">' . $title . '' . $this->icon . '</button></' . $tag . '><div class="' . $this->content_class . '">',
-                    );
-                }
-                else {
-                    $Block = array(
-                        'name' => 'opener',
-                        'markup' => '<details class="' . $this->base_class . '"><summary class="' . $this->trigger_class . '"><' . $tag . ' class="' . $this->title_class . '">' . $title . '</' . $tag . '>' . $this->icon . '</summary><div class="' . $this->content_class . '">',
-                    );
-                }
-
-                return $Block;
-            }
-
-            if (preg_match('/^!@(.*)$/', $Line['text'], $matches))
-            {
-                if ( $this->a11y )
-                {
-                    $Block = array(
-                        'name' => 'closer',
-                        'markup' => '</div></div>'
-                    );
-                }
-                else
-                {
-                    $Block = array(
-                        'name' => 'closer',
-                        'markup' => '</div></details>'
-                    );
-                }
-                return $Block;
-            }
-
-        };
-        $markdown->blockDetailsContinue = function($Line, array $Block)
-        {
-            if (preg_match('/^!@(.*)$/', $Line['text'], $matches))
-            {
-                if ( $this->a11y )
-                {
-                    $Block = array(
-                        'name' => 'closer',
-                        'markup' => '</div></div>'
-                    );
-                }
-                else
-                {
-                    $Block = array(
-                        'name' => 'closer',
-                        'markup' => '</div></details>'
-                    );
-                }
-
-                $Block['closed'] = true;
-                return $Block;
-            }
-        };
+        return require __DIR__ . '/vendor/autoload.php';
     }
 
-    public function onTwigSiteVariables()
+    /**
+     * Initialize the plugin
+     */
+    public function onPluginsInitialized(): void
     {
-        if ($this->config->get('plugins.markdown-details.built_in_css'))
+        // Don't proceed if we are in the admin plugin
+        if ($this->isAdmin())
         {
-            $this->grav['assets']
-                ->add('plugin://markdown-details/assets/details.css');
+            return;
         }
 
-        if ($this->config->get('plugins.markdown-details.a11y'));
+        // Enable the main events we are interested in
+        $this->enable([
+            // Put your main events here
+            'onTwigTemplatePaths'   => ['onTwigTemplatePaths', 0],
+            'onPageContentRaw'      => ['onPageContentRaw', 0],
+        ]);
+    }
+
+    /**
+     * Process Content before Grav's processing
+     *
+     * @param Event $event
+     */
+    public function onPageContentRaw(Event $event)
+    {
+        /** @var Page $page */
+        $page = $event['page'];
+        /** @var Twig $twig */
+        $twig = $this->grav['twig'];
+        /** @var Config $config */
+        $config = $this->config->get( 'plugins.'.$this->name );
+
+        // is there any content to process?
+        $raw = $page->getRawContent();
+        if ( $raw && preg_match_all( '/!>[\S\s]*?!@/', $raw, $instances ) )
+        {
+            $this->loadAssets();
+
+            foreach ( $instances[0] as $instance )
+            {
+                $options = [];
+
+                // sort out the title line
+                preg_match( '/^!>(\s?\[(\w*)\]?)?\s*(.*)/', $instance, $titeMatch );
+                $options['titleTag'] = ( $titeMatch[2] ) ? $titeMatch[2] : $config['default_title_tag'];
+                $options['titleText'] = $titeMatch[3];
+
+                // get the content part
+                preg_match( '/!>.*\n([\S\s]*?)!@/', $instance, $contentMatch );
+                $options['content'] = $contentMatch[1];
+
+                // process the template
+                $markup = $twig->processTemplate('partials/md-details.html.twig', $options );
+
+                // replace the old content with the processed one
+                $newRaw = str_replace( $instance, $markup, $page->getRawContent() );
+                // save the new content
+                $page->setRawContent( $newRaw );
+                // $this->grav["debugger"]->addMessage($options['titleText'] );
+            }
+        }
+    }
+
+    /**
+     * Add our assets
+     */
+    public function loadAssets()
+    {
+        /** @var Config $config */
+        $config = $this->config->get( 'plugins.'.$this->name );
+
+        // add CSS only if demanded
+        if ( $config['built_in_css'] )
+        {
+            $this->grav['assets']->add('plugin://markdown-details/css/details.css');
+        }
+        // add JS only if a11y markup and built in JS is demanded
+        if ( $config['a11y'] && $config['built_in_js'] )
         {
             $this->grav['assets']->add('plugin://markdown-details/js/details.js', ['group' => 'bottom']);
         }
     }
 
+    /**
+     * Add current directory to twig lookup paths.
+     */
+    public function onTwigTemplatePaths()
+    {
+        $this->grav['twig']->twig_paths[] = __DIR__ . '/templates';
+    }
 }
